@@ -7,9 +7,10 @@
       "**/node_modules/**",
       "**/*.md",
       "database/**",
+      "supabase/**",
       "server.js",
       "package.json",
-      "start-server.bat",
+      "**/*.bat",
       "test-*.html"
     ],
     "rewrites": [
