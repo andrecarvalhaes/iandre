@@ -1,26 +1,48 @@
 # i.Andre - Sistema de Gerenciamento de Agentes AI
 
-Sistema pessoal para gerenciar agentes AI que auxiliam nas atividades do ClubPetro.
+Sistema multi-agente com integração Claude API para gerenciar tarefas e automatizar processos.
+
+## 🌐 Deploy
+
+**Site ao vivo:** [https://iandre.web.app](https://iandre.web.app)
+
+**GitHub:** [https://github.com/andrecarvalhaes/iandre](https://github.com/andrecarvalhaes/iandre)
 
 ## 🚀 Como Usar
 
 ### Abertura Rápida
 
-1. **Abrir no navegador:**
-   - Clique duas vezes em `index.html` OU
-   - Arraste `index.html` para o navegador OU
-   - Use Live Server no VS Code
+1. **Acesse online:**
+   - Visite: [https://iandre.web.app](https://iandre.web.app)
 
-2. **Via servidor local (opcional):**
+2. **Desenvolvimento local (para integração Claude API):**
    ```bash
-   # Python 3
+   # Windows - Duplo clique em:
+   start-server.bat
+
+   # Ou Python 3:
    python -m http.server 8000
 
-   # Node.js (http-server)
-   npx http-server
+   # Ou Node.js:
+   npm start
    ```
 
    Depois acesse: `http://localhost:8000`
+
+⚠️ **IMPORTANTE:** Para usar Claude API localmente, rode via servidor HTTP (não arquivo local) para evitar erros de CORS.
+
+### Configurar Claude API (Desenvolvimento Local)
+
+1. **Obtenha API key:** https://console.anthropic.com/settings/keys
+2. **Configure:**
+   ```bash
+   # Copie o exemplo
+   cp config/claude-api.example.js config/claude-api.js
+
+   # Edite e adicione sua key
+   # config/claude-api.js → apiKey: 'sk-ant-api...'
+   ```
+3. **Documentação completa:** [CLAUDE-API-SETUP.md](CLAUDE-API-SETUP.md)
 
 ## 📁 Estrutura do Projeto
 
@@ -39,28 +61,44 @@ i.andre/
 
 ## ✨ Funcionalidades Atuais
 
-### Métricas do Dia
+### 🔐 Autenticação
+- Login com Supabase Auth
+- Sessão persistente
+- Proteção de rotas
+- Multi-tenant (workspaces)
+
+### 📊 Métricas do Dia
 - ✅ Tarefas concluídas (com tendência)
 - ⚠️ Tarefas precisando atenção
 - 📋 Tarefas em fila
+- 📈 Métricas em tempo real do banco
 
-### Mesa de Trabalho
-- 🎨 Visualização de agentes
+### 🤖 Mesa de Trabalho
+- 🎨 3 agentes especializados (Anna, Nick, Lucas)
 - 🟢 Status em tempo real (Ativo/Ocioso)
-- 💬 Atividade atual de cada agente
-- ➕ Adicionar novos agentes
+- 💬 Chat integrado com Claude API
+- 📝 System prompts personalizados por agente
+- 🔄 Realtime updates com Supabase
 
-### Tarefas
-- 📝 Lista de tarefas em andamento
+### 📋 Tarefas
+- 📝 CRUD completo de tarefas
 - 👤 Atribuição a agentes
-- ⏱️ Tempo de execução
-- 🔔 Alertas de tarefas que precisam atenção
+- ⏱️ Rastreamento de tempo
+- 🔔 Alertas e notificações
+- 📊 Histórico de atividades
 
-### Ações Disponíveis
+### 💬 Chat com Agentes
+- 🤖 Respostas reais via Claude API
+- 💾 Histórico persistente no banco
+- 🔄 Contexto de conversação
+- 🎭 Personalidades distintas por agente
+
+### ⚙️ Ações Disponíveis
 - ➕ Criar nova tarefa
 - 🤖 Criar novo agente
-- ⚙️ Configurações
-- 👁️ Ver detalhes de agentes e tarefas
+- 💬 Chat em tempo real
+- 👁️ Ver detalhes e histórico
+- 🚪 Logout seguro
 
 ## 🎨 Decisões de UX/UI
 
@@ -89,27 +127,44 @@ i.andre/
 
 ## 🔮 Roadmap
 
+### ✅ Fase 1 (Completa)
+- [x] Sistema multi-agente (Anna, Nick, Lucas)
+- [x] Chat com Claude API
+- [x] Autenticação Supabase
+- [x] Database PostgreSQL completo
+- [x] Deploy Firebase + GitHub
+
 ### Fase 2 (Próxima)
+- [ ] Backend proxy para Claude API (segurança)
 - [ ] Notificações push
 - [ ] Gráficos de produtividade
-- [ ] Busca e filtros avançados
 - [ ] Timeline de atividades
-- [ ] Drag & drop para reatribuir tarefas
+- [ ] Anexos em tarefas
 
 ### Fase 3 (Futuro)
-- [ ] Chat direto com agentes
 - [ ] Analytics avançado
 - [ ] Sugestões automáticas de otimização
 - [ ] PWA (Progressive Web App)
-- [ ] Integração com APIs externas
 - [ ] Modo escuro
+- [ ] Integração Slack/Discord
 
 ## 🛠️ Tecnologias
 
+### Frontend
 - **HTML5** - Estrutura semântica
 - **CSS3** - Grid, Flexbox, Animações, Variáveis CSS
 - **JavaScript (Vanilla)** - Sem dependências
 - **Design System** - Tokens de design consistentes
+
+### Backend & APIs
+- **Supabase** - Database PostgreSQL, Auth, Realtime
+- **Claude API (Anthropic)** - Integração com modelos Claude 4
+- **Firebase Hosting** - Deploy e CDN
+
+### Agentes
+- **Anna** - UX/UI Expert
+- **Nick** - Database Architect
+- **Lucas** - Backend Developer
 
 ## 🎯 Princípios de Design Aplicados
 
@@ -128,9 +183,11 @@ i.andre/
 
 ## 📝 Notas
 
-- **Sem backend**: Dados armazenados em memória (não persiste ao recarregar)
-- **Sem autenticação**: Sistema de uso pessoal
+- **Backend Supabase**: Dados persistentes com PostgreSQL
+- **Autenticação JWT**: Sistema seguro multi-usuário
+- **Claude API**: Requer API key (configure em `config/claude-api.js`)
 - **Sem build process**: Arquivos servidos diretamente
+- **Deploy automático**: Firebase Hosting com GitHub sync
 
 ## 👩‍🎨 Créditos
 
