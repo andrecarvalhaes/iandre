@@ -22,7 +22,16 @@ const AIService = {
 
     // Enviar mensagem para Claude API
     async sendMessage(agentSlug, userMessage, conversationHistory = []) {
-        // Verificar se API está configurada
+        // Detectar ambiente
+        const isProduction = window.location.hostname !== 'localhost' &&
+                            window.location.hostname !== '127.0.0.1';
+
+        // Se produção, usar Supabase Edge Function (resolve CORS)
+        if (isProduction) {
+            return this.sendMessageViaProxy(agentSlug, userMessage, conversationHistory);
+        }
+
+        // Se desenvolvimento, verificar se API está configurada
         if (!window.ClaudeConfig.isConfigured()) {
             return this.getMockResponse(agentSlug, userMessage);
         }
@@ -35,7 +44,7 @@ const AIService = {
             const systemPrompt = this.agentPrompts[agentSlug] ||
                 `Você é ${agentSlug}, um assistente AI especializado.`;
 
-            // Fazer requisição para Claude API
+            // Fazer requisição DIRETA para Claude API (apenas desenvolvimento)
             const response = await fetch(window.ClaudeConfig.apiUrl, {
                 method: 'POST',
                 headers: {
@@ -67,6 +76,43 @@ const AIService = {
 
             // Fallback para mock se API falhar
             return this.getMockResponse(agentSlug, userMessage, error.message);
+        }
+    },
+
+    // Enviar mensagem via Supabase Edge Function (produção)
+    async sendMessageViaProxy(agentSlug, userMessage, conversationHistory = []) {
+        try {
+            // Construir histórico
+            const history = conversationHistory.map(msg => ({
+                role: msg.tipo_remetente === 'usuario' ? 'user' : 'assistant',
+                content: msg.conteudo
+            }));
+
+            // Obter sessão do Supabase
+            const { data: { session } } = await window.SupabaseClient.auth.getSession();
+            if (!session) {
+                throw new Error('Usuário não autenticado');
+            }
+
+            // Chamar Edge Function
+            const { data, error } = await window.SupabaseClient.functions.invoke('claude-proxy', {
+                body: {
+                    agentSlug,
+                    message: userMessage,
+                    conversationHistory: history
+                }
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            return data.response;
+
+        } catch (error) {
+            console.error('Erro ao chamar proxy:', error);
+            return this.getMockResponse(agentSlug, userMessage,
+                `Erro no servidor: ${error.message}. Configure a Edge Function no Supabase.`);
         }
     },
 
