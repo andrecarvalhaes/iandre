@@ -6,14 +6,24 @@ echo ========================================
 echo.
 
 REM Verificar se Supabase CLI está instalado
-where supabase >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo ❌ Supabase CLI não encontrado!
-    echo.
-    echo Instale com: npm install -g supabase
-    echo.
-    pause
-    exit /b 1
+set SUPABASE_CMD=%SUPABASE_CMD%
+
+REM Tentar CLI local primeiro
+if exist "%~dp0.%SUPABASE_CMD%-cli\%SUPABASE_CMD%.exe" (
+    set SUPABASE_CMD=%~dp0.%SUPABASE_CMD%-cli\%SUPABASE_CMD%.exe
+    echo 📍 Usando Supabase CLI local
+) else (
+    REM Tentar CLI global
+    where %SUPABASE_CMD% >nul 2>nul
+    if %ERRORLEVEL% NEQ 0 (
+        echo ❌ Supabase CLI não encontrado!
+        echo.
+        echo Execute: install-%SUPABASE_CMD%-cli.bat
+        echo Ou visite: https://github.com/%SUPABASE_CMD%/cli#install
+        echo.
+        pause
+        exit /b 1
+    )
 )
 
 echo ✅ Supabase CLI encontrado
@@ -21,11 +31,11 @@ echo.
 
 REM Verificar se está linkado ao projeto
 echo 🔗 Verificando link com projeto...
-supabase link --project-ref vwzgreramlxwzmtbhchl 2>nul
+%SUPABASE_CMD% link --project-ref vwzgreramlxwzmtbhchl 2>nul
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo ⚠️ Projeto não linkado. Linkando agora...
-    supabase link --project-ref vwzgreramlxwzmtbhchl
+    %SUPABASE_CMD% link --project-ref vwzgreramlxwzmtbhchl
     if %ERRORLEVEL% NEQ 0 (
         echo.
         echo ❌ Falha ao linkar projeto!
@@ -50,7 +60,7 @@ if /i "%CONFIGURE_KEY%"=="S" (
     if not "!API_KEY!"=="" (
         echo.
         echo 📝 Configurando secret...
-        supabase secrets set CLAUDE_API_KEY=!API_KEY!
+        %SUPABASE_CMD% secrets set CLAUDE_API_KEY=!API_KEY!
         if !ERRORLEVEL! EQU 0 (
             echo ✅ Secret configurado com sucesso!
         ) else (
@@ -65,7 +75,7 @@ echo.
 echo 🚀 Fazendo deploy da Edge Function...
 echo.
 
-supabase functions deploy claude-proxy
+%SUPABASE_CMD% functions deploy claude-proxy
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -74,7 +84,7 @@ if %ERRORLEVEL% EQU 0 (
     echo ========================================
     echo.
     echo Sua Edge Function está disponível em:
-    echo https://vwzgreramlxwzmtbhchl.supabase.co/functions/v1/claude-proxy
+    echo https://vwzgreramlxwzmtbhchl.%SUPABASE_CMD%.co/functions/v1/claude-proxy
     echo.
     echo Teste agora em: https://iandre.web.app
     echo.
@@ -82,7 +92,7 @@ if %ERRORLEVEL% EQU 0 (
     echo.
     echo ❌ Falha no deploy!
     echo.
-    echo Verifique os logs: supabase functions logs claude-proxy
+    echo Verifique os logs: %SUPABASE_CMD% functions logs claude-proxy
     echo.
 )
 
