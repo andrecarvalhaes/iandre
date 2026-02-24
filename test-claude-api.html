@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Claude API - i.andre</title>
+    <style>
+        body {
+            font-family: system-ui;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 { color: #667eea; margin-top: 0; }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            border-left: 4px solid #667eea;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+        .status.success { background: #dcfce7; color: #166534; border: 2px solid #86efac; }
+        .status.error { background: #fee2e2; color: #991b1b; border: 2px solid #fca5a5; }
+        .status.info { background: #dbeafe; color: #1e40af; border: 2px solid #93c5fd; }
+        button {
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        button:hover { background: #5a67d8; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        .message-box {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+        }
+        .message.user {
+            background: #dbeafe;
+            margin-left: 2rem;
+        }
+        .message.assistant {
+            background: #f3f4f6;
+            margin-right: 2rem;
+        }
+        .message .label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .agent-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .agent-btn {
+            padding: 0.5rem 1rem;
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+        }
+        .agent-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        pre {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Teste Claude API - i.andre</h1>
+        <p>Teste completo da integração com Claude API e os agentes Anna, Nick e Lucas.</p>
+
+        <!-- Status da Configuração -->
+        <div class="test-section">
+            <h2>📊 Status da Configuração</h2>
+            <div id="config-status" class="status info">Verificando...</div>
+            <button onclick="checkConfig()">Recarregar Status</button>
+        </div>
+
+        <!-- Teste Simples -->
+        <div class="test-section">
+            <h2>🧪 Teste Rápido</h2>
+            <p>Envia uma mensagem simples para Anna sem histórico.</p>
+            <button onclick="quickTest()" id="btn-quick-test">Testar Anna</button>
+            <div id="quick-result" style="display:none"></div>
+        </div>
+
+        <!-- Chat Interativo -->
+        <div class="test-section">
+            <h2>💬 Chat Interativo</h2>
+            <p>Converse com os agentes e veja as respostas em tempo real.</p>
+
+            <div class="agent-selector">
+                <button class="agent-btn active" onclick="selectAgent('anna')" id="agent-anna">
+                    🎨 Anna (UX/UI)
+                </button>
+                <button class="agent-btn" onclick="selectAgent('nick')" id="agent-nick">
+                    🗄️ Nick (Database)
+                </button>
+                <button class="agent-btn" onclick="selectAgent('lucas')" id="agent-lucas">
+                    ⚙️ Lucas (Backend)
+                </button>
+            </div>
+
+            <div class="message-box" id="chat-messages">
+                <div style="text-align: center; color: #9ca3af; padding: 2rem;">
+                    Envie uma mensagem para começar
+                </div>
+            </div>
+
+            <input type="text" id="chat-input" placeholder="Digite sua mensagem..." onkeypress="handleEnter(event)">
+            <button onclick="sendChat()" id="btn-send-chat">Enviar</button>
+            <button onclick="clearChat()">Limpar Chat</button>
+        </div>
+
+        <!-- Diagnóstico Técnico -->
+        <div class="test-section">
+            <h2>🔍 Diagnóstico Técnico</h2>
+            <button onclick="runDiagnostics()">Executar Diagnóstico</button>
+            <pre id="diagnostics-output" style="display:none"></pre>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/init.js"></script>
+    <script src="config/supabase.js"></script>
+    <script src="config/claude-api.js"></script>
+    <script src="services/ai-service.js"></script>
+
+    <script>
+        let selectedAgent = 'anna';
+        let chatHistory = [];
+
+        // Verificar configuração
+        function checkConfig() {
+            const status = document.getElementById('config-status');
+
+            if (!window.ClaudeConfig) {
+                status.className = 'status error';
+                status.innerHTML = '❌ ClaudeConfig não carregado! Verifique se claude-api.js está incluído.';
+                return;
+            }
+
+            if (!window.ClaudeConfig.isConfigured()) {
+                status.className = 'status error';
+                status.innerHTML = '❌ API Key não configurada! Adicione sua key em config/claude-api.js';
+                return;
+            }
+
+            if (!window.AIService) {
+                status.className = 'status error';
+                status.innerHTML = '❌ AIService não carregado! Verifique se ai-service.js está incluído.';
+                return;
+            }
+
+            status.className = 'status success';
+            status.innerHTML = `
+                ✅ <strong>Sistema Configurado!</strong><br>
+                <small>
+                    API Key: ${window.ClaudeConfig.apiKey.substring(0, 20)}...<br>
+                    Modelo: ${window.ClaudeConfig.model}<br>
+                    Max Tokens: ${window.ClaudeConfig.maxTokens}<br>
+                    Temperature: ${window.ClaudeConfig.temperature}
+                </small>
+            `;
+        }
+
+        // Teste rápido
+        async function quickTest() {
+            const btn = document.getElementById('btn-quick-test');
+            const result = document.getElementById('quick-result');
+
+            btn.disabled = true;
+            btn.textContent = '💭 Testando...';
+            result.style.display = 'block';
+            result.className = 'status info';
+            result.innerHTML = '⏳ Enviando mensagem para Anna via Claude API...';
+
+            try {
+                const response = await window.AIService.sendMessage('anna', 'Olá Anna! Pode se apresentar brevemente?', []);
+
+                result.className = 'status success';
+                result.innerHTML = `
+                    ✅ <strong>Sucesso!</strong> Resposta recebida da Claude API:<br><br>
+                    <div style="background: white; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; border-left: 4px solid #16a34a;">
+                        ${response}
+                    </div>
+                `;
+            } catch (error) {
+                result.className = 'status error';
+                result.innerHTML = `
+                    ❌ <strong>Erro ao testar API:</strong><br><br>
+                    <code>${error.message}</code><br><br>
+                    <small>Verifique a API key e tente novamente.</small>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Testar Anna';
+            }
+        }
+
+        // Selecionar agente
+        function selectAgent(agent) {
+            selectedAgent = agent;
+            document.querySelectorAll('.agent-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('agent-' + agent).classList.add('active');
+            clearChat();
+        }
+
+        // Enviar mensagem
+        async function sendChat() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const btn = document.getElementById('btn-send-chat');
+            const messagesDiv = document.getElementById('chat-messages');
+
+            // Adicionar mensagem do usuário
+            chatHistory.push({ role: 'user', content: message });
+            renderMessages();
+
+            input.value = '';
+            input.disabled = true;
+            btn.disabled = true;
+            btn.textContent = '💭 Pensando...';
+
+            try {
+                // Enviar para Claude API
+                const response = await window.AIService.sendMessage(selectedAgent, message, chatHistory.slice(0, -1));
+
+                // Adicionar resposta do agente
+                chatHistory.push({ role: 'assistant', content: response });
+                renderMessages();
+            } catch (error) {
+                chatHistory.push({
+                    role: 'assistant',
+                    content: `❌ Erro: ${error.message}`
+                });
+                renderMessages();
+            } finally {
+                input.disabled = false;
+                btn.disabled = false;
+                btn.textContent = 'Enviar';
+                input.focus();
+            }
+        }
+
+        // Renderizar mensagens
+        function renderMessages() {
+            const messagesDiv = document.getElementById('chat-messages');
+
+            if (chatHistory.length === 0) {
+                messagesDiv.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 2rem;">Envie uma mensagem para começar</div>';
+                return;
+            }
+
+            messagesDiv.innerHTML = chatHistory.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="label">${msg.role === 'user' ? 'Você' : selectedAgent.toUpperCase()}</div>
+                    <div>${msg.content}</div>
+                </div>
+            `).join('');
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Limpar chat
+        function clearChat() {
+            chatHistory = [];
+            renderMessages();
+        }
+
+        // Enter para enviar
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendChat();
+            }
+        }
+
+        // Diagnóstico
+        async function runDiagnostics() {
+            const output = document.getElementById('diagnostics-output');
+            output.style.display = 'block';
+
+            const diagnostics = {
+                'Timestamp': new Date().toISOString(),
+                'Window.ClaudeConfig': !!window.ClaudeConfig,
+                'API Key Configured': window.ClaudeConfig?.isConfigured() || false,
+                'API Key (first 20 chars)': window.ClaudeConfig?.apiKey?.substring(0, 20) || 'N/A',
+                'Model': window.ClaudeConfig?.model || 'N/A',
+                'Max Tokens': window.ClaudeConfig?.maxTokens || 'N/A',
+                'Temperature': window.ClaudeConfig?.temperature || 'N/A',
+                'API URL': window.ClaudeConfig?.apiUrl || 'N/A',
+                'Window.AIService': !!window.AIService,
+                'Agent Prompts Loaded': window.AIService ? Object.keys(window.AIService.agentPrompts || {}).length : 0,
+                'Available Agents': window.AIService ? Object.keys(window.AIService.agentPrompts || {}).join(', ') : 'N/A',
+                'Supabase Client': !!window.SupabaseClient
+            };
+
+            // Testar conectividade
+            try {
+                const testResponse = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': window.ClaudeConfig.apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: window.ClaudeConfig.model,
+                        max_tokens: 10,
+                        messages: [{ role: 'user', content: 'test' }]
+                    })
+                });
+
+                diagnostics['API Connectivity'] = testResponse.ok ? '✅ OK' : `❌ ${testResponse.status}`;
+            } catch (error) {
+                diagnostics['API Connectivity'] = `❌ ${error.message}`;
+            }
+
+            output.textContent = JSON.stringify(diagnostics, null, 2);
+        }
+
+        // Inicializar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                checkConfig();
+
+                // Carregar prompts dos agentes
+                if (window.AIService) {
+                    window.AIService.loadAgentPrompts().catch(console.error);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

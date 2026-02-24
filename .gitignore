@@ -1,0 +1,50 @@
+# i.Andre - Git Ignore
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs e Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependências (se adicionar build process no futuro)
+node_modules/
+bower_components/
+
+# Build (se adicionar no futuro)
+dist/
+build/
+.cache/
+
+# Temporários
+*.tmp
+*.temp
+.temp/
+
+# Backup
+*.backup
+*.bak
+
+# Ambiente
+.env
+.env.local
+.env.*.local
+
+# Configurações sensíveis (API Keys)
+config/claude-api.js
+
+# Firebase
+.firebase/
+firebase-debug.log
+.firebaserc

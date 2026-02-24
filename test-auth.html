@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Autenticação</title>
+    <style>
+        body {
+            font-family: system-ui;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        button {
+            padding: 0.75rem 1.5rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+        button:hover { background: #1d4ed8; }
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            border-left: 4px solid #2563eb;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error { border-left-color: #dc2626; background: #fee2e2; }
+        .success { border-left-color: #16a34a; background: #dcfce7; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Teste de Autenticação - i.andre</h1>
+
+    <div class="test-card">
+        <h2>1. Verificar Supabase</h2>
+        <button onclick="testSupabase()">Testar Conexão</button>
+        <div id="result-supabase" class="result" style="display:none"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>2. Verificar Usuário no Banco</h2>
+        <button onclick="checkUser()">Verificar andrecarva97@gmail.com</button>
+        <div id="result-user" class="result" style="display:none"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>3. Testar Login</h2>
+        <input type="email" id="test-email" value="andrecarva97@gmail.com" style="padding: 0.5rem; margin-right: 0.5rem; width: 250px;">
+        <input type="password" id="test-password" placeholder="Senha" style="padding: 0.5rem; margin-right: 0.5rem; width: 150px;">
+        <button onclick="testLogin()">Testar Login</button>
+        <div id="result-login" class="result" style="display:none"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>4. Criar/Atualizar Senha do Usuário</h2>
+        <p>Se o login falhar, execute este SQL no Supabase:</p>
+        <textarea id="sql-fix" readonly style="width: 100%; height: 150px; padding: 1rem; font-family: monospace; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
+-- Execute no Supabase SQL Editor:
+UPDATE auth.users
+SET
+  encrypted_password = crypt('Teste@123', gen_salt('bf')),
+  email_confirmed_at = COALESCE(email_confirmed_at, NOW()),
+  confirmed_at = COALESCE(confirmed_at, NOW()),
+  updated_at = NOW()
+WHERE email = 'andrecarva97@gmail.com';
+
+-- Verificar:
+SELECT
+  id,
+  email,
+  email_confirmed_at IS NOT NULL as confirmado,
+  created_at
+FROM auth.users
+WHERE email = 'andrecarva97@gmail.com';
+        </textarea>
+        <button onclick="copySQL()">Copiar SQL</button>
+    </div>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/init.js"></script>
+    <script src="config/supabase.js"></script>
+
+    <script>
+        function showResult(elementId, content, type = 'result') {
+            const el = document.getElementById(elementId);
+            el.textContent = content;
+            el.className = `result ${type}`;
+            el.style.display = 'block';
+        }
+
+        async function testSupabase() {
+            try {
+                showResult('result-supabase', 'Testando conexão...', 'result');
+
+                // Testar conexão
+                const { data, error } = await window.SupabaseClient
+                    .from('agentes')
+                    .select('count');
+
+                if (error) throw error;
+
+                showResult('result-supabase',
+                    '✅ Supabase conectado com sucesso!\n' +
+                    'URL: https://vwzgreramlxwzmtbhchl.supabase.co\n' +
+                    'Status: Online\n' +
+                    'Tabela agentes: Acessível',
+                    'success'
+                );
+            } catch (error) {
+                showResult('result-supabase',
+                    '❌ Erro de conexão:\n' + error.message,
+                    'error'
+                );
+            }
+        }
+
+        async function checkUser() {
+            try {
+                showResult('result-user', 'Verificando usuário...', 'result');
+
+                // Tentar buscar o usuário via API
+                const { data: users, error } = await window.SupabaseClient.auth.admin.listUsers();
+
+                if (error) {
+                    // Se não tiver acesso admin, tentar de outra forma
+                    showResult('result-user',
+                        '⚠️ Não é possível verificar usuários via frontend.\n' +
+                        'Use o Supabase Dashboard:\n' +
+                        'https://supabase.com/dashboard/project/vwzgreramlxwzmtbhchl/auth/users\n\n' +
+                        'Verifique se:\n' +
+                        '✓ Usuário andrecarva97@gmail.com existe\n' +
+                        '✓ Email está confirmado (has confirmed email)\n' +
+                        '✓ Senha foi definida',
+                        'result'
+                    );
+                    return;
+                }
+
+                const user = users.find(u => u.email === 'andrecarva97@gmail.com');
+
+                if (user) {
+                    showResult('result-user',
+                        '✅ Usuário encontrado!\n' +
+                        `ID: ${user.id}\n` +
+                        `Email: ${user.email}\n` +
+                        `Confirmado: ${user.email_confirmed_at ? 'Sim' : 'NÃO'}\n` +
+                        `Criado em: ${new Date(user.created_at).toLocaleString()}`,
+                        'success'
+                    );
+                } else {
+                    showResult('result-user',
+                        '❌ Usuário não encontrado!\n' +
+                        'Crie o usuário no Supabase Dashboard.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('result-user',
+                    '⚠️ Verificação manual necessária.\n' +
+                    'Acesse: https://supabase.com/dashboard/project/vwzgreramlxwzmtbhchl/auth/users\n\n' +
+                    'Erro: ' + error.message,
+                    'result'
+                );
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+
+            if (!password) {
+                showResult('result-login', '❌ Digite uma senha para testar!', 'error');
+                return;
+            }
+
+            try {
+                showResult('result-login', 'Tentando fazer login...', 'result');
+
+                const { data, error } = await window.SupabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                showResult('result-login',
+                    '✅ LOGIN BEM-SUCEDIDO!\n\n' +
+                    `Email: ${data.user.email}\n` +
+                    `User ID: ${data.user.id}\n` +
+                    `Session: Ativa\n\n` +
+                    '➡️ Você pode acessar o sistema normalmente!',
+                    'success'
+                );
+
+                // Fazer logout para não interferir
+                setTimeout(async () => {
+                    await window.SupabaseClient.auth.signOut();
+                    console.log('Logout automático para não interferir nos testes');
+                }, 2000);
+
+            } catch (error) {
+                let errorMsg = '❌ FALHA NO LOGIN\n\n';
+
+                if (error.message.includes('Invalid')) {
+                    errorMsg += 'Erro: Credenciais inválidas\n\n' +
+                        'Possíveis causas:\n' +
+                        '1. Senha não foi configurada\n' +
+                        '2. Senha incorreta\n' +
+                        '3. Email não confirmado\n\n' +
+                        'SOLUÇÃO:\n' +
+                        'Execute o SQL da seção 4 acima no Supabase.';
+                } else {
+                    errorMsg += 'Erro: ' + error.message;
+                }
+
+                showResult('result-login', errorMsg, 'error');
+            }
+        }
+
+        function copySQL() {
+            const sql = document.getElementById('sql-fix');
+            sql.select();
+            document.execCommand('copy');
+            alert('✅ SQL copiado! Cole no Supabase SQL Editor.');
+        }
+
+        // Teste automático ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('Executando teste automático...');
+                testSupabase();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>i.Andre - Gerenciador de Agentes</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+    <!-- Header com ações primárias -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="app-title">i.Andre</h1>
+            <div class="header-actions">
+                <span id="user-info" style="color: #6b7280; margin-right: 1rem; font-size: 0.875rem;"></span>
+                <button class="btn btn-primary" id="btn-new-task">
+                    <span class="icon">+</span> Nova Tarefa
+                </button>
+                <button class="btn btn-icon" id="btn-settings" title="Configurações">
+                    <span class="icon">⚙️</span>
+                </button>
+                <button class="btn btn-icon" id="btn-logout" title="Sair">
+                    <span class="icon">🚪</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <!-- Seção de Métricas -->
+        <section class="metrics-section">
+            <h2 class="section-title">Métricas do Dia</h2>
+            <div class="metrics-grid">
+                <!-- Card: Tarefas Concluídas -->
+                <div class="metric-card metric-success">
+                    <div class="metric-label">Concluídas</div>
+                    <div class="metric-value">12</div>
+                    <div class="metric-trend positive">
+                        <span class="trend-icon">↑</span>
+                        <span class="trend-text">+3 hoje</span>
+                    </div>
+                </div>
+
+                <!-- Card: Tarefas Precisando Atenção -->
+                <div class="metric-card metric-warning">
+                    <div class="metric-label">Atenção <span class="icon-warning">⚠️</span></div>
+                    <div class="metric-value">3</div>
+                    <div class="metric-subtitle">Requerem ação</div>
+                </div>
+
+                <!-- Card: Tarefas em Fila -->
+                <div class="metric-card metric-info">
+                    <div class="metric-label">Em Fila</div>
+                    <div class="metric-value">8</div>
+                    <div class="metric-subtitle">Aguardando execução</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mesa de Trabalho -->
+        <section class="workspace-section">
+            <div class="section-header">
+                <h2 class="section-title">Mesa de Trabalho</h2>
+                <button class="btn btn-secondary" id="btn-new-agent">
+                    <span class="icon">+</span> Novo Agente
+                </button>
+            </div>
+
+            <div class="agents-grid" id="agents-grid">
+                <!-- Agente: Anna -->
+                <div class="agent-card active" data-agent="anna">
+                    <div class="agent-avatar">🎨</div>
+                    <h3 class="agent-name">Anna</h3>
+                    <div class="agent-status active">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ativo</span>
+                    </div>
+                    <div class="agent-activity">
+                        <p class="activity-text">"Criando tela home..."</p>
+                    </div>
+                    <button class="agent-action-btn">Ver detalhes</button>
+                </div>
+
+                <!-- Agente 2: Placeholder -->
+                <div class="agent-card idle" data-agent="agent2">
+                    <div class="agent-avatar">💼</div>
+                    <h3 class="agent-name">Assistente</h3>
+                    <div class="agent-status idle">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ocioso</span>
+                    </div>
+                    <div class="agent-activity">
+                        <p class="activity-text">Aguardando tarefa</p>
+                    </div>
+                    <button class="agent-action-btn">Atribuir tarefa</button>
+                </div>
+
+                <!-- Agente 3: Placeholder -->
+                <div class="agent-card active" data-agent="agent3">
+                    <div class="agent-avatar">📊</div>
+                    <h3 class="agent-name">Analista</h3>
+                    <div class="agent-status active">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ativo</span>
+                    </div>
+                    <div class="agent-activity">
+                        <p class="activity-text">"Análise de dados..."</p>
+                    </div>
+                    <button class="agent-action-btn">Ver detalhes</button>
+                </div>
+
+                <!-- Agente 4: Placeholder -->
+                <div class="agent-card idle" data-agent="agent4">
+                    <div class="agent-avatar">🔧</div>
+                    <h3 class="agent-name">Técnico</h3>
+                    <div class="agent-status idle">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ocioso</span>
+                    </div>
+                    <div class="agent-activity">
+                        <p class="activity-text">Aguardando tarefa</p>
+                    </div>
+                    <button class="agent-action-btn">Atribuir tarefa</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tarefas em Andamento -->
+        <section class="tasks-section">
+            <h2 class="section-title">Tarefas em Andamento</h2>
+
+            <div class="tasks-list" id="tasks-list">
+                <!-- Tarefa 1 -->
+                <div class="task-card in-progress">
+                    <div class="task-header">
+                        <span class="task-icon">⏳</span>
+                        <h3 class="task-title">Criar tela home do sistema</h3>
+                    </div>
+                    <div class="task-meta">
+                        <span class="task-agent">Atribuída a: <strong>Anna</strong></span>
+                        <span class="task-time">Iniciada há 5min</span>
+                    </div>
+                    <button class="task-details-btn">Ver detalhes</button>
+                </div>
+
+                <!-- Tarefa 2 -->
+                <div class="task-card in-progress">
+                    <div class="task-header">
+                        <span class="task-icon">⏳</span>
+                        <h3 class="task-title">Análise de dados Q1</h3>
+                    </div>
+                    <div class="task-meta">
+                        <span class="task-agent">Atribuída a: <strong>Analista</strong></span>
+                        <span class="task-time">Iniciada há 15min</span>
+                    </div>
+                    <button class="task-details-btn">Ver detalhes</button>
+                </div>
+
+                <!-- Tarefa 3 -->
+                <div class="task-card attention">
+                    <div class="task-header">
+                        <span class="task-icon">⚠️</span>
+                        <h3 class="task-title">Revisão de relatório mensal</h3>
+                    </div>
+                    <div class="task-meta">
+                        <span class="task-agent">Atribuída a: <strong>Assistente</strong></span>
+                        <span class="task-time">Bloqueada - requer ação</span>
+                    </div>
+                    <button class="task-details-btn attention">Resolver agora</button>
+                </div>
+            </div>
+
+            <button class="btn btn-link" id="btn-all-tasks">Ver todas as tarefas →</button>
+        </section>
+    </main>
+
+    <!-- Modal placeholder para futuras interações -->
+    <div class="modal" id="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Modal</h3>
+                <button class="modal-close" id="modal-close">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Conteúdo dinâmico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Initialization -->
+    <script src="scripts/init.js"></script>
+
+    <!-- Config & Services -->
+    <script src="config/supabase.js"></script>
+    <script src="config/claude-api.js"></script>
+    <script src="services/auth-service.js"></script>
+    <script src="services/agent-service.js"></script>
+    <script src="services/task-service.js"></script>
+    <script src="services/message-service.js"></script>
+    <script src="services/metrics-service.js"></script>
+    <script src="services/ai-service.js"></script>
+
+    <!-- App -->
+    <script src="scripts/dashboard-v2.js"></script>
+</body>
+</html>
